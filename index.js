@@ -13,8 +13,8 @@ var mongoDB = process.env.MONGODB_URL
 console.log(mongoDB)
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true},()=>{
     console.log("Connected to Database")
-    app.listen(8000,"0.0.0.0", function () {
-        console.log("StockBroker app listening at http://localhost:8000")
+    app.listen(3000,"0.0.0.0", function () {
+        console.log("StockBroker app listening at http://localhost:3000")
     })
 },(err)=>{
     console.log(err.message)
