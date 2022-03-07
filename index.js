@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
 app.use('/api', require('./routes/api'))
 
 var mongoDB = process.env.MONGODB_URL
-
+console.log(mongoDB)
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true},()=>{
     console.log("Connected to Database")
     app.listen(8000, function () {
