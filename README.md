@@ -1,8 +1,8 @@
 # SmallCase-StockBroker-Backend-Assignment
 
-##Create API for Trading Securities
+## Create API for Trading Securities
 
-<h3>Tech Stack</h3>
+## Tech Stack
 * Node
 * Express
 * MongoDB
@@ -10,7 +10,7 @@
 
 API endpoint : https://smallcase-stockbroker.herokuapp.com/api/
 
-###https://smallcase-stockbroker.herokuapp.com/api/trade/
+### https://smallcase-stockbroker.herokuapp.com/api/trade/
 Trade
 Path : /api/trade
 *GET api will return list of all Trades corresponding to Securities
@@ -27,13 +27,13 @@ body :{
 	"type":"BUY"
 }
 
-DELETE
+## DELETE
 /api/trade/:trade_id
-*will delete trade corresponding to trade_id
+* will delete trade corresponding to trade_id
  
-POST
+## POST
 /api/trade
-*will create a new Trade
+* will create a new Trade
 body: {
 	"ticker_symbol":"TCS",
 	"quantity":10,
@@ -41,18 +41,18 @@ body: {
 	"type":"BUY"
 }
   
-###https://smallcase-stockbroker.herokuapp.com/api/returns/  
-GET
+### https://smallcase-stockbroker.herokuapp.com/api/returns/  
+## GET
 /api/returns/
 *will return Cummulative Sum of all the holdings.
 
   
-###https://smallcase-stockbroker.herokuapp.com/api/portfolio/ 
-GET
+### https://smallcase-stockbroker.herokuapp.com/api/portfolio/ 
+## GET
 /api/portfolio/
 *will provide list of portfolio with average buy price and quantity.
 
-GET
+## GET
 /api/portfolio/:portfolio_id
 *will provide details of a security.
  
