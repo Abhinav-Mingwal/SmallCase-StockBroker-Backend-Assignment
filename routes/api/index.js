@@ -18,10 +18,11 @@ route.get('/returns', async(req,res)=>{
           })
     }
 })
+
 route.get('/',(req,res)=>{
     res.status(404).json({
         status : false,
-        message : "Following are the list of routes for this API: 1. '/trade' 2. '/trade/[id]/delete' 3. '/portfolio' 4. '/returns'",
+        message : "Following are the list of routes for this API: 1. '/trade'[POST][GET] 2. '/trade/:trade_id'[PUT,GET,DELETE]  3. '/portfolio/:portfolio_id [GET]' 4. '/portfolio/ [GET]' 4. '/returns'[GET]",
         error : ""
     })
 })

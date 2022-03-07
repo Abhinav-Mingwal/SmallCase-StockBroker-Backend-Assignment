@@ -61,10 +61,11 @@ async function getReturns(){
         let ports = await Portfolio.find();
         let val = 0;
         for(let port of ports){
+            //val+=(currentPrice-avgBuyPrice)*quantity of stocks
             val+=(100-port.avg_buy_price)*port.quantity
         }
         return{
-            status :true,
+            status:true,
             message:`your Cummulaive Return is ${val}`,
             data: val
         }

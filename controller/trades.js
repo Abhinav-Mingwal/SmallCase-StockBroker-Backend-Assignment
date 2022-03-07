@@ -13,6 +13,7 @@ async function addTrade(body){
         if(check){
             return check
         }
+        // in case of a Sell Trade we need to check whether the trade is feasible or not
         if(body.type.toUpperCase() == 'SELL'){
             let portfolio = await Portfolio.findByTickerSymbol(body.ticker_symbol)
             if(portfolio && portfolio.quantity<body.quantity){
@@ -36,6 +37,7 @@ async function addTrade(body){
         })
         await trade.save()
         var port = await Portfolio.findByTickerSymbol(body.ticker_symbol)
+        // making sure if Trade Doesn't exist in Portfolio we will create a new One and append the Trade within the Portfolio
         if(port){
             if(!port.trades){
                 port.trades=[]
