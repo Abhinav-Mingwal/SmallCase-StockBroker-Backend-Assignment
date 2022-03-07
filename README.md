@@ -1,8 +1,8 @@
 # SmallCase-StockBroker-Backend-Assignment
 
-<h1>Create API for Trading Securities<h1>
+<h1>Create API for Trading Securities</h1>
 
-Tech Stack
+<h3>Tech Stack</h3>
 . Node
 . Express
 . MongoDB
