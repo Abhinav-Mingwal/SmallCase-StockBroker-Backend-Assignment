@@ -9,7 +9,7 @@ app.use(bodyParser.json({ limit: '1mb' }));
 app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
 app.use('/api', require('./routes/api'))
 
-var mongoDB = `mongodb://${config.SECRETS.MONGODB_IP}/${config.SECRETS.MONGO_DB_NAME}`;
+var mongoDB = "mongodb+srv://abhinav:abhinav@12345@cluster0.se7xo.mongodb.net/stockBroker?retryWrites=true&w=majority";
 
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true},()=>{
     console.log("Connected to Database")
