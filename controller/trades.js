@@ -9,10 +9,12 @@ const utils = require("../utils/utils")
  */
 async function addTrade(body){
     try{
+        //validator to verify all the Body parameters
         let check = utils.tradeValidator(body);
         if(check){
             return check
         }
+        // in case of a Sell Trade we need to check whether the trade is feasible or not
         if(body.type.toUpperCase() == 'SELL'){
             let portfolio = await Portfolio.findByTickerSymbol(body.ticker_symbol)
             if(portfolio && portfolio.quantity<body.quantity){
@@ -36,12 +38,15 @@ async function addTrade(body){
         })
         await trade.save()
         var port = await Portfolio.findByTickerSymbol(body.ticker_symbol)
+        // making sure if Trade Doesn't exist in Portfolio we will create a new One and append the Trade within the Portfolio
         if(port){
             if(!port.trades){
                 port.trades=[]
             }
             port.trades.push(trade)
+            // Utils method which calculates avg price based on current trade and portfolios parameters
             port.avg_buy_price = utils.avgPriceAfterBuySell(port,body)
+            // update Quantity in case BUY or SELL
             port.quantity = port.quantity + ((body.type.toUpperCase() == 'BUY')?body.quantity:-body.quantity);
         }else{
             port = new Portfolio({
@@ -92,6 +97,7 @@ async function editTrade(trade_id,body){
                 message: "Trade Not Found!!"
             }
         }
+        // a case-insensitive method to get portfolio by ticker_symbol
         let oldPortfolio = await Portfolio.findByTickerSymbol(trade.ticker_symbol)
         if(!oldPortfolio){
             return{
@@ -102,19 +108,24 @@ async function editTrade(trade_id,body){
 
 
         var newPortfolio = oldPortfolio
+        // keep a flag for in case ticker_symbol is same or changed on Update
         let sameTickerFlag = (trade.ticker_symbol.toUpperCase() == body.ticker_symbol.toUpperCase())
         if(!sameTickerFlag){
+            // getting new Stock if ticker doesn't match
             newPortfolio = await Portfolio.findByTickerSymbol(body.ticker_symbol)
             if(!newPortfolio){
                 return{
                     status: false,
-                    message: `Trade cannot be made as ${trade.ticker_symbol} doesn't exist in your portfolio`
+                    message: `Trade cannot be made as ${body.ticker_symbol} doesn't exist in your portfolio`
                 }
             }
         }
 
+        // if Previous Trade is Sell and Current Trade is also Sell,we need to reverse previousTrade i.e BUY to SELL and SELL to BUY
+        // in case of same ticker symbol or different logic will change
         if(trade.type.toUpperCase() == 'SELL' && body.type.toUpperCase() == 'SELL'){
             if(!sameTickerFlag){
+                //check if Selling is feasable for new Stock or not
                 if((newPortfolio.quantity-body.quantity)<0){
                     return {
                         status:false,
@@ -122,6 +133,7 @@ async function editTrade(trade_id,body){
                     }
                 }
             }else{
+                // in case of same stock check if after reverting previous trade it should be greator than equal to current selling quantity
                 if((oldPortfolio.quantity+trade.quantity)<body.quantity){
                     return {
                         status:false,
@@ -130,6 +142,7 @@ async function editTrade(trade_id,body){
                 }
             }
         }
+        // in case of Both BUY , Sell Old Trade and Buy New One,No need to check newTrade as its a BUY type
         else if(trade.type.toUpperCase() == 'BUY' && body.type.toUpperCase()=='BUY'){
             if((oldPortfolio.quantity-trade.quantity)<0){
                 return {
@@ -138,14 +151,17 @@ async function editTrade(trade_id,body){
                 }
             }
         }
+        // in case of BUY SELL trade ,prevTrade will be sold and newTrade will also be sold
         else if(trade.type.toUpperCase() == 'BUY' && body.type.toUpperCase()=='SELL'){
             if(!sameTickerFlag){
+                //if its feasible to revert oldTrade
                 if((oldPortfolio.quantity-trade.quantity)<0){
                     return {
                         status:false,
                         message: `Cannot undo Sell as Quantity Exceeds ${oldPortfolio.ticker_symbol} Portfolio limit!!`
                     }
                 }
+                //if its feasible to proceed with new Trade
                 if((newPortfolio.quantity-body.quantity)<0){
                     return {
                         status:false,
@@ -153,6 +169,7 @@ async function editTrade(trade_id,body){
                     }
                 }
             }else{
+                // in case of Same Ticker remove quantity after reverted trade should be more than current trade.
                 if((oldPortfolio.quantity-trade.quantity)<body.quantity){
                     return {
                         status:false,
@@ -161,17 +178,17 @@ async function editTrade(trade_id,body){
                 }
             }
         }
-        let oldTrade = new Trade({
-            ticker_symbol: trade.ticker_symbol,
-            price: trade.price,
-            quantity: trade.quantity,
-            type: ((trade.type.toUpperCase()=='BUY')?'SELL':'BUY')
-        })
+
+        // reverting a previous Trade
+        var oldTrade = trade
+        oldTrade.type = (oldTrade.type.toUpperCase() == "BUY")?"SELL":"BUY"
+        // updating value if case of reverting Values
         oldPortfolio.avg_buy_price = utils.avgPriceAfterBuySell(oldPortfolio,oldTrade)
         oldPortfolio.quantity = oldPortfolio.quantity + parseInt(((oldTrade.type.toUpperCase()=='BUY')?oldTrade.quantity:-oldTrade.quantity))
         
         var newTrade = oldTrade
         if(!sameTickerFlag){
+            //if not same stock then create a new trade and delete prevTrade
             newTrade = new Trade({
                 ticker_symbol: body.ticker_symbol,
                 price: trade.price,
@@ -188,10 +205,11 @@ async function editTrade(trade_id,body){
         newTrade.price = body.price
         newTrade.quantity = body.quantity
         newTrade.type = body.type;
+        await newTrade.save()
+        //updating portFolio values for new Trade
         newPortfolio.avg_buy_price = utils.avgPriceAfterBuySell(newPortfolio,newTrade)
         newPortfolio.quantity = newPortfolio.quantity + parseInt(((newTrade.type.toUpperCase()=='BUY')?newTrade.quantity:-newTrade.quantity))
-
-        await newTrade.save()
+        
         await oldPortfolio.save()
         await newPortfolio.save()
         
@@ -238,6 +256,7 @@ async function deleteTrade(trade_id){
                 message: `Trade cannot be made as ${trade.ticker_symbol} doesn't exist in your portfolio`
             }
         }
+        // in case trade was BUY i need to make sure in order to SELL the stock we have sufficient quantity
         if(trade.type.toUpperCase() == 'BUY'){
             if(portfolio && (portfolio.quantity-trade.quantity)<0){
                 return {
@@ -252,6 +271,8 @@ async function deleteTrade(trade_id){
             quantity: trade.quantity,
             type: ((trade.type.toUpperCase()=='BUY')?'SELL':'BUY')
         })
+
+        //on deleting updating avgPrice and quantity
         portfolio.avg_buy_price = utils.avgPriceAfterBuySell(portfolio,oldTrade)
         portfolio.quantity = portfolio.quantity + parseInt(((oldTrade.type.toUpperCase()=='BUY')?oldTrade.quantity:-oldTrade.quantity))
         

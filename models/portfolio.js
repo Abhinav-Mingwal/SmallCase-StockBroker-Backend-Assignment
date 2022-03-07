@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+/**
+ * Portfolio schema contains following fields along with validator checks
+ */
 let portfolioSchema = new Schema(
   {
     ticker_symbol: {

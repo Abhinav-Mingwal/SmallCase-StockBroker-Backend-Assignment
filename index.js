@@ -9,11 +9,12 @@ app.use(bodyParser.json({ limit: '1mb' }));
 app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
 app.use('/api', require('./routes/api'))
 
-var mongoDB = `mongodb://${config.SECRETS.MONGODB_IP}/${config.SECRETS.MONGO_DB_NAME}`;
+var mongoDB = process.env.MONGODB_URL || `mongodb://${config.SECRETS.MONGODB_IP}/${config.SECRETS.MONGO_DB_NAME}`
+var port = process.env.PORT|| 8000
 mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true},()=>{
     console.log("Connected to Database")
-    app.listen(8000, function () {
-        console.log("StockBroker app listening at http://localhost:8000")
+    app.listen((port), function () {
+        console.log(`StockBroker app listening at http://localhost:${port}`)
     })
 },(err)=>{
     console.log(err.message)
