@@ -3,6 +3,7 @@ const utils = require("../utils/utils")
 
 async function getPortfolio(portfolio_id){
     try{
+        // regex check for document ID
         if(!utils.uuidRegexCheck(portfolio_id)){
             return{
                 status: false,
